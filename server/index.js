@@ -5,7 +5,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import axios from 'axios';
 
-const port = 3000;
+const port = 4000;
 
 async function startServer() {
     const app = express();
