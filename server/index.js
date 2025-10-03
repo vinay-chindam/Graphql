@@ -15,6 +15,7 @@ async function startServer() {
     id: ID!
     title: String!
     completed: Boolean!
+    user:User!
   }
 
   type User{
@@ -22,13 +23,15 @@ async function startServer() {
   name: String!
   username: String!
   email: String!
+  todos: [Todo!]!
   
   }
     
     
     type Query {
-    getTodos: [Todo!]!
-    getUsers:[User!]!
+        getUser(id:ID!):User
+        getTodos: [Todo!]!
+        getUsers:[User!]!
     }
   `
 
@@ -36,18 +39,38 @@ async function startServer() {
         ;
 
     const resolvers = {
-        Query: {
-            getTodos: async () => {
-                const response = await axios.get('https://jsonplaceholder.typicode.com/todos');
-                return response.data; 
-            },
-            getUsers: async()=> {
-                const response = axios.get('https://jsonplaceholder.typicode.com/users')
-                return (await response).data;
-            }
+  Query: {
+    getUser: async (_, args) => {
+      const { id } = args;
+      const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${id}`);
+      return response.data;
+    },
+    getTodos: async () => {
+      const response = await axios.get('https://jsonplaceholder.typicode.com/todos');
+      return response.data;
+    },
+    getUsers: async () => {
+      const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+      return response.data;
+    },
+  },
+  Todo: {
+    user: async (parent) => {
+      // This runs for each Todo's `user` field
+      const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${parent.userId}`);
+      return response.data;
+    },
 
-        },
-    };
+  },
+  User: {
+    todos: async (parent) => {
+      // fetch todos for this specific user
+      const response = await axios.get(`https://jsonplaceholder.typicode.com/todos?userId=${parent.id}`);
+      return response.data;
+    },
+  },
+};
+
 
 
     const server = new ApolloServer({ typeDefs, resolvers });
